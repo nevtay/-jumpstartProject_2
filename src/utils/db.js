@@ -1,14 +1,13 @@
 // imports and configs
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-dotenv.config();
+require('dotenv').config();
 
 // WHITELIST >>> CURRENT <<< IP ADDRESS
 mongoose.connect(
     process.env.DB_CONNECT,
     {
-      useNewUrlParser: false,
-      useUnifiedTopology: false,
+      useNewUrlParser: true,
+      useCreateIndex: true, // for creating index with unique
     },
     () => console.log('connected to db!'),
 );
