@@ -1,7 +1,7 @@
 const express = require('express');
 // eslint-disable-next-line no-unused-vars
-const mongoose = require('mongoose');
 const app = express();
+const userRoute = require('./routes/users.route');
 
 app.use(express.json());
 app.get('/', (req, res) => {
@@ -16,6 +16,17 @@ app.get('/', (req, res) => {
         '6': 'POST /users/:username/tweets',
         '7': 'DELETE /users/:username/tweets',
       });
+});
+app.use('/users', userRoute);
+
+app.use((err, req, res, next) => {
+  res.status(err.statusCode || 500);
+  console.error(err);
+  if (err.statusCode) {
+    res.send({error: err.message}.error);
+  } else {
+    res.send({error: 'internal server error'});
+  }
 });
 
 
