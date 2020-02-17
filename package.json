@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon src/index.js"
+    "start": "nodemon src/index.js",
+    "test": "jest --watchAll --runInBand --detectOpenHandles"
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,7 @@
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-react": "^7.18.3",
     "jest": "^25.1.0",
+    "mongodb-memory-server": "^6.2.4",
     "nodemon": "^2.0.2",
     "supertest": "^4.0.2"
   },
