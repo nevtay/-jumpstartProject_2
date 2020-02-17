@@ -30,7 +30,8 @@
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-react": "^7.18.3",
     "jest": "^25.1.0",
-    "nodemon": "^2.0.2"
+    "nodemon": "^2.0.2",
+    "supertest": "^4.0.2"
   },
   "jest": {
     "testEnvironment": "node"
