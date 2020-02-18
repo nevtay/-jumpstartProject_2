@@ -21,7 +21,6 @@ app.use('/users', userRoute);
 
 app.use((err, req, res, next) => {
   res.status(err.statusCode || 500);
-  console.error(err);
   if (err.statusCode) {
     res.send({error: err.message}.error);
   } else {
