@@ -18,20 +18,22 @@ const thoughtSchema = new Schema({
 
 const UserSchema = new Schema({
   username: {
-    required: true,
     type: String,
+    required: true,
     unique: true,
+    trim: true,
     min: 3,
     max: 50,
   },
   email: {
-    required: true,
     type: String,
+    required: true,
     unique: true,
+    trim: true,
   },
   password: {
-    required: true,
     type: String,
+    required: true,
     min: 5,
   },
   joinDate: {
