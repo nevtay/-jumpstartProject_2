@@ -36,6 +36,7 @@ describe('registering new user', () => {
       username: 'username',
       email: 'email@email.com',
       password: 'password',
+      thoughtsArray: [],
     }];
     await User.create(testUserProfile);
   });
@@ -55,21 +56,16 @@ describe('registering new user', () => {
         .post('/users/register')
         .send(expectedUser)
         .expect(201);
-    expect(actualUser).toMatchObject(expectedUser, '-_id, -__v');
+    expect(actualUser).toMatchObject(expectedUser);
   });
 
-  test('POST /register should return details of new user', async () => {
-    const expectedUser = {
-      username: 'username',
-      email: 'email@email.com',
-      password: 'password',
-      thoughtsArray: [],
-    };
+  test('GET /:username should return user without their password if it matches', async () => {
     const {body: actualUser} = await request(app)
-        .post('/users/register')
-        .send(expectedUser)
-        .expect(201);
-    expect(actualUser).toMatchObject(expectedUser, '-_id, -__v');
+        .get('/users/username')
+        .expect(200);
+    expect(actualUser).toHaveProperty('username', 'username');
+    expect(actualUser).toHaveProperty('email', 'email@email.com');
+    expect(actualUser).toHaveProperty('thoughtsArray', []);
+    expect(actualUser).not.toHaveProperty('password', 'password');
   });
-})
-;
+});
