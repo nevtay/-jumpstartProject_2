@@ -9,7 +9,7 @@ router.get('/', (req, res) => {
 });
 
 router.get('/:username', async (req, res, next) => {
-  const USER_DOES_NOT_EXIST = 'User doesn\'t exist!';
+  const USER_DOES_NOT_EXIST = 'Uh oh - User doesn\'t exist!';
   const filteredUser = String(req.params.username);
   try {
     const userExists = await User.findOne(
@@ -27,30 +27,6 @@ router.get('/:username', async (req, res, next) => {
     }
     next(err);
   }
-});
-
-router.post('/register', async (req, res) => {
-  const newUser = new User({
-    username: req.body.username,
-    email: req.body.email,
-    password: req.body.password,
-  });
-  try {
-    const savedUser = await newUser.save();
-    res
-        .status(201)
-        .json(savedUser);
-  } catch (err) {
-    res
-        .send(error.message);
-  }
-
-  router.use((err, req, res, next) => {
-    if (err.message === 'ValidationError') {
-      err.statusCode = 400;
-    }
-    next(err);
-  });
 });
 
 
