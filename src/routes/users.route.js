@@ -12,7 +12,9 @@ router.get('/:username', async (req, res, next) => {
   const USER_DOES_NOT_EXIST = 'User doesn\'t exist!';
   const filteredUser = String(req.params.username);
   try {
-    const userExists = await User.findOne({username: filteredUser}, '-_id -__v -password');
+    const userExists = await User.findOne(
+        {username: filteredUser}, '-_id -__v -password',
+    );
     if (userExists === null) {
       throw new Error(USER_DOES_NOT_EXIST);
     }
