@@ -45,7 +45,7 @@ describe('registering new user', () => {
     await User.deleteMany();
   });
 
-  test('POST /register should return a new user with an empty thoughtsArray', async () => {
+  test('POST /register should return new user with no thoughts', async () => {
     const expectedUser = {
       username: 'username',
       email: 'email@email.com',
@@ -59,7 +59,7 @@ describe('registering new user', () => {
     expect(actualUser).toMatchObject(expectedUser);
   });
 
-  test('GET /:username should return user without their password if it matches', async () => {
+  test('GET /:username returns found user without password', async () => {
     const {body: actualUser} = await request(app)
         .get('/users/username')
         .expect(200);
