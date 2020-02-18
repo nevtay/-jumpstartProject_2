@@ -2,6 +2,8 @@ const express = require('express');
 // eslint-disable-next-line no-unused-vars
 const app = express();
 const userRoute = require('./routes/users.route');
+const registerRoute = require('./routes/register.route');
+const middlewares = require('./middlewares/middlewares');
 
 app.use(express.json());
 app.get('/', (req, res) => {
@@ -18,15 +20,8 @@ app.get('/', (req, res) => {
       });
 });
 app.use('/users', userRoute);
+app.use('/register', registerRoute);
 
-app.use((err, req, res, next) => {
-  res.status(err.statusCode || 500);
-  if (err.statusCode) {
-    res.send({error: err.message}.error);
-  } else {
-    res.send({error: 'internal server error'});
-  }
-});
-
+app.use(middlewares.defaultErrorHandler);
 
 module.exports = app;
