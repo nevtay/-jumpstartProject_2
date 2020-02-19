@@ -3,7 +3,8 @@ const router = express.Router();
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { jwtKeySecret } = require('../config/retrieveJWTSecret')
+const { jwtKeySecret } = require('../config/retrieveJWTSecret');
+const { protectRoute } = require('../middlewares/auth');
 
 // create JWT token function
 const createJWTToken = (myId, myUserName) => {
@@ -16,33 +17,24 @@ const createJWTToken = (myId, myUserName) => {
   const payload = {
     id: myId,
     username: myUserName,
-    exp: parseInt(exp.getTime() / 1000),
+    exp: parseInt(exp.getTime() / 1000)
   };
   const token = jwt.sign(payload, secret);
   return token;
 };
-
-// default GET
-router.get('/', (req, res) => {
-  res
-      .status(200)
-      .send('GET /users is working');
-});
-
 // GET user by name
 router.get('/:username', async (req, res, next) => {
   const USER_DOES_NOT_EXIST = `Uh oh - user "${req.params.username}" doesn't exist!`;
   const filteredUser = String(req.params.username);
   try {
     const userExists = await User.findOne(
-        {username: filteredUser}, '-_id -__v -password',
+      { username: filteredUser },
+      '-_id -__v -password'
     );
     if (userExists === null) {
       throw new Error(USER_DOES_NOT_EXIST);
     }
-    res
-        .status(200)
-        .send(userExists);
+    res.status(200).send(userExists);
   } catch (err) {
     if (err.message === USER_DOES_NOT_EXIST) {
       err.statusCode = 404;
@@ -54,16 +46,17 @@ router.get('/:username', async (req, res, next) => {
 // POST login validation
 router.post('/login', async (req, res, next) => {
   try {
-    const {username, password} = req.body;
+    const { username, password } = req.body;
 
     // check if username exists
-    const userExists = await User.findOne({username});
+    const userExists = await User.findOne({ username });
     if (userExists === null) {
       throw new Error('Invalid username');
     }
 
     // check if password exists
     const validPassword = await bcrypt.compare(password, userExists.password);
+    console.log(validPassword);
     if (!validPassword) {
       throw new Error('Invalid password');
     }
@@ -75,15 +68,43 @@ router.post('/login', async (req, res, next) => {
 
     res.cookie('loginToken', loginToken, {
       expires: expiresInOneDay,
-      httpOnly: true,
+      httpOnly: true
     });
 
-    res.send(loginToken);
+    console.log('token: ', loginToken);
+    res.send('login success!');
   } catch (error) {
     console.log(error);
-    if (error.message === 'Invalid username' || error.message === 'Invalid password') {
+    if (
+      error.message === 'Invalid username' ||
+      error.message === 'Invalid password'
+    ) {
       error.statusCode = 400;
     }
+    next(error);
+  }
+});
+
+// logout
+router.post('/logout', (req, res) => {
+  res.clearCookie('loginToken').send('You are now logged out!');
+});
+
+// default GET
+router.get('/', protectRoute, async (req, res, next) => {
+  try {
+    console.log(req);
+    const user = await User.findOne(
+      { username: req.user.username },
+      '-__v -_id -password'
+    );
+    if (user === null) {
+      res.status(200).send('Please login to see content.');
+    }
+    res.status(200).send(user);
+  } catch (error) {
+    error.message = 'Wrong username';
+    error.statusCode = 400;
     next(error);
   }
 });

@@ -6,13 +6,10 @@ const mongoOptions = {
   useNewUrlParser: true, // prevent deprecation warnings
   useUnifiedTopology: true,
   useFindAndModify: false, // For find one and update
-  useCreateIndex: true, // for creating index with unique
+  useCreateIndex: true // for creating index with unique
 };
 
-mongoose.connect(
-    process.env.DB_CONNECT,
-    mongoOptions,
-);
+mongoose.connect(process.env.DB_CONNECT, mongoOptions);
 
 const db = mongoose.connection;
 

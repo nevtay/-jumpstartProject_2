@@ -10,7 +10,6 @@ const defaultErrorHandler = (err, req, res, next) => {
   }
 };
 
-
 module.exports = { 
     defaultErrorHandler, 
 };
