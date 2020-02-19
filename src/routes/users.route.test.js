@@ -3,7 +3,7 @@ const app = require('../app');
 const mongoose = require('mongoose');
 const {MongoMemoryServer} = require('mongodb-memory-server');
 const User = require('../models/User');
-require('../utils/db');
+// require('../utils/db');
 
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useFindAndModify', false);
@@ -33,7 +33,7 @@ describe('registering new user', () => {
   // create mock data for each test
   beforeEach(async () => {
     const testUserProfile = [{
-      username: 'username',
+      username: 'usernameee',
       email: 'email@email.com',
       password: 'password',
       thoughtsArray: [],
@@ -45,27 +45,27 @@ describe('registering new user', () => {
     await User.deleteMany();
   });
 
-  test('POST /register should return new user with no thoughts', async () => {
-    const expectedUser = {
-      username: 'username',
-      email: 'email@email.com',
-      password: 'password',
-      thoughtsArray: [],
-    };
-    const {body: actualUser} = await request(app)
-        .post('/users/register')
-        .send(expectedUser)
-        .expect(201);
-    expect(actualUser).toMatchObject(expectedUser);
+  test('GET /users should return a string', async () => {
+    const body = await request(app)
+        .get('/users')
+        .expect(200);
+    expect(body.text).toBe('Path to /user is working');
   });
 
-  test('GET /:username returns found user without password', async () => {
+  test('GET /users/:username returns user without password if user exists', async () => {
     const {body: actualUser} = await request(app)
-        .get('/users/username')
+        .get('/users/usernameee')
         .expect(200);
-    expect(actualUser).toHaveProperty('username', 'username');
+    expect(actualUser).toHaveProperty('username', 'usernameee');
     expect(actualUser).toHaveProperty('email', 'email@email.com');
     expect(actualUser).toHaveProperty('thoughtsArray', []);
-    expect(actualUser).not.toHaveProperty('password', 'password');
+    expect(actualUser).not.toHaveProperty('password');
+  });
+
+  test('GET /users/:username returns error message if user doesn\'t exist', async () => {
+    const body = await request(app)
+        .get('/users/thisUserDoesNotExist');
+    expect(body.statusCode).toBe(404);
+    expect(body.text).toEqual('Uh oh - user "thisUserDoesNotExist" doesn\'t exist!');
   });
 });
