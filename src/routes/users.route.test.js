@@ -49,7 +49,7 @@ describe('registering new user', () => {
     const body = await request(app)
         .get('/users')
         .expect(200);
-    expect(body.text).toBe('Path to /user is working');
+    expect(body.text).toBe('GET /users is working');
   });
 
   test('GET /users/:username returns user without password if user exists', async () => {
