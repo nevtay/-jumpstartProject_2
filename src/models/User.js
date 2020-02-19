@@ -4,7 +4,6 @@ const Schema = mongoose.Schema;
 const thoughtSchema = new Schema({
   id: {
     type: String,
-    unique: true,
   },
   content: {
     type: String,
