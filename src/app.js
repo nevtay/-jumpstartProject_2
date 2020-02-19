@@ -6,8 +6,11 @@ const registerRoute = require('./routes/register.route');
 const middlewares = require('./middlewares/middlewares');
 
 app.use(express.json());
+app.use('/users', userRoute);
+app.use('/register', registerRoute);
 app.get('/', (req, res) => {
   res
+      .status(200)
       .json({
         '0': 'GET /users',
         '1': 'GET /users/:username',
@@ -19,8 +22,7 @@ app.get('/', (req, res) => {
         '7': 'DELETE /users/:username/tweets',
       });
 });
-app.use('/users', userRoute);
-app.use('/register', registerRoute);
+
 
 app.use(middlewares.defaultErrorHandler);
 
