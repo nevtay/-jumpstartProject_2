@@ -2,6 +2,7 @@ const express = require('express');
 const User = require('../models/User');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
+const {emailValidation} = require('../utils/validation')
 
 router.get('/', async (req, res) => {
   res
@@ -22,6 +23,13 @@ router.post('/', async (req, res, next) => {
         .send('Username already exists - please try another username.');
   }
 
+  const {error} = emailValidation(req.body)
+  if (error) {
+    console.log(error.details);
+    res.status(400);
+    res.send(error.details[0].message);
+  }
+
   // hashing the password
   const salt = await bcrypt.genSalt(5);
   const hashedPassword = await bcrypt.hash(req.body.password, salt);
@@ -29,23 +37,14 @@ router.post('/', async (req, res, next) => {
   const newUser = await new User({
     username: req.body.username,
     email: req.body.email,
-    password: hashedPassword,
+    password: hashedPassword !== '' ? hashedPassword : '',
   });
   try {
     const savedUser = await newUser.save();
     res
-        .json(savedUser)
-        .status(201);
+        .status(201)
+        .json(savedUser);
   } catch (err) {
-    const errMsg = await err.message
-        .split(' ')
-        .filter((word) => word.includes('`'))
-        .map((word) => {
-        word.startsWith('`') ? word = word.slice(1, word.length - 1) : word;
-        return `${word} is invalid.`;
-        })
-        .join(' ');
-    err.msg = errMsg;
     err.statusCode = 400;
     next(err);
   }
