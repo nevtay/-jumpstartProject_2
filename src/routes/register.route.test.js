@@ -1,3 +1,4 @@
+/*eslint-disable-next-line*/
 const request = require('supertest');
 const app = require('../app');
 const mongoose = require('mongoose');
@@ -9,6 +10,9 @@ mongoose.set('useNewUrlParser', true);
 mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
 mongoose.set('useUnifiedTopology', true);
+
+// const jwt = require('jsonwebtoken');
+// jest.mock('jsonwebtoken');
 
 describe('registering new user', () => {
   let mongoserver;
@@ -27,47 +31,75 @@ describe('registering new user', () => {
     await mongoserver.stop();
   });
 
-  // beforeEach(async () => {
-  //   const usersData = [
-  //     {
-  //       username: 'myUser',
-  //       email: 'myuser@gmail.com',
-  //       password: 'myuserabc123',
-  //     },
-  //   ];
-  //   await User.create(usersData);
-  // });
+  beforeEach(async () => {
+    const usersData = [
+      {
+        username: 'myUser',
+        email: 'myuser@gmail.com',
+        password: 'myuserabc123',
+      },
+    ];
+    await User.create(usersData);
+  });
 
   afterEach(async () => {
     await User.deleteMany();
   });
 
-  test('POST should return new user with no thoughts', async () => {
+  it('POST creates user with empty thoughtsArray and hashes their password', async () => {
     const expectedUser = {
-      username: 'myUserrr',
-      email: 'myuserrr@gmail.com',
-      password: 'myuserrrabc123',
+      username: 'notmyUser',
+      email: 'notmyuser@gmail.com',
+      password: 'myuserabc123',
     };
-    const body = await request(app)
+    const {body: user} = await request(app)
         .post('/register')
-        .send({
-          username: 'myUserrr',
-          email: 'myuserrr@gmail.com',
-          password: 'myuserrrabc123',
-        })
+        .send(expectedUser)
         .expect(201);
-    expect(body).toBe(expectedUser.username);
+    expect(user.username).toBe(expectedUser.username);
+    expect(user.password).not.toBe(expectedUser.password);
+    expect(user.thoughtsArray).toStrictEqual([]);
   });
 
+  describe('registering with invalid or missing inputs', () => {
+    test('empty inputs should return an error', async () => {
+      const expectedUser = {
+        username: '',
+        email: '',
+        password: '',
+      };
+      const body = await request(app)
+      .post('/register')
+      .send(expectedUser)
+      .expect(400)
+      expect(body.text).toEqual('"username" is not allowed to be empty');
+    });
 
-  // describe('registering with invalid or missing inputs', () => {
-  //   test('POST /register should return error text if fields are empty', async () => {
+    test('an invalid email address should return an error', async () => {
+      const expectedUser = {
+        username: 'abcrasd',
+        email: 'notemail.com',
+        password: 'iamahaiku',
+      };
+      const body = await request(app)
+      .post('/register')
+      .send(expectedUser)
+      .expect(400)
+      expect(body.text).toEqual('"email" must be a valid email');
+    });
 
-  //   });
-
-  //   test('POST /register should notify user if a single field is invalid', async () => {
-
-  //   });
-  // });
+    test('a username of less than 3 characters should return an error', async () => {
+      const expectedUser = {
+        username: 'hi',
+        email: 'notemail@gmail.com',
+        password: 'iamahaiku',
+      };
+      const body = await request(app)
+      .post('/register')
+      .send(expectedUser)
+      .expect(400)
+      expect(body.text).toEqual('"username" length must be at least 3 characters long');
+    });
+  });
 });
 
