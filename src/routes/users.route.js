@@ -3,18 +3,19 @@ const router = express.Router();
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { jwtKeySecret } = require('../config/retrieveJWTSecret')
 
 // create JWT token function
 const createJWTToken = (myId, myUserName) => {
   const today = new Date();
   const exp = new Date(today);
 
-  const secret = getJWTSecret();
+  const secret = jwtKeySecret();
   exp.setDate(today.getDate() + 60);
 
   const payload = {
     id: myId,
-    userName: myUserName,
+    username: myUserName,
     exp: parseInt(exp.getTime() / 1000),
   };
   const token = jwt.sign(payload, secret);
@@ -77,7 +78,7 @@ router.post('/login', async (req, res, next) => {
       httpOnly: true,
     });
 
-    res.send(token);
+    res.send(loginToken);
   } catch (error) {
     console.log(error);
     if (error.message === 'Invalid username' || error.message === 'Invalid password') {
