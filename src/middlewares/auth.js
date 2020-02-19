@@ -1,14 +1,15 @@
-const jwt = require("jsonwebtoken");
-const { getJWTSecret } = require("../config/jwt");
+const jwt = require('jsonwebtoken');
+const { jwtKeySecret } = require('../config/retrieveJWTSecret');
 const protectRoute = (req, res, next) => {
   try {
-    if (!req.cookies.token) {
-      throw new Error("You are not authorized");
+    // console.log(req);
+    if (!req.headers.cookie) {
+      throw new Error('Access forbidden!');
     }
-    req.user = jwt.verify(req.cookies.token, getJWTSecret());
+    req.user = jwt.verify(req.headers.logintoken, jwtKeySecret());
     next();
   } catch (err) {
-    console.log(err);
+    // console.log(err);
     err.statusCode = 401;
     next(err);
   }
