@@ -21,7 +21,7 @@ const UserSchema = new Schema({
     required: true,
     unique: true,
     trim: true,
-    min: 3,
+    minlength: 3,
     max: 50,
   },
   email: {
@@ -29,11 +29,12 @@ const UserSchema = new Schema({
     required: true,
     unique: true,
     trim: true,
+    minlength: 5,
   },
   password: {
     type: String,
     required: true,
-    min: 5,
+    minlength: 5,
   },
   joinDate: {
     type: Date,
