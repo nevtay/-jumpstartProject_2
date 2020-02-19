@@ -1,35 +1,51 @@
 const express = require('express');
-const router = express.Router();
 const User = require('../models/User');
+const router = express.Router();
+const bcrypt = require('bcryptjs');
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   res
       .send('path to /register is working')
       .status(200);
 });
 
 router.post('/', async (req, res, next) => {
-  console.log(req.body);
-  const newUser = new User({
+  // check if email already exists
+  const emailAlreadyExists = await User.findOne({email: req.body.email});
+  if (emailAlreadyExists) {
+    res
+        .send('Email already exists - please try another email address.');
+  }
+  const usernameAlreadyExists = await User.findOne({username: req.body.username});
+  if (usernameAlreadyExists) {
+    res
+        .send('Username already exists - please try another username.');
+  }
+
+  // hashing the password
+  const salt = await bcrypt.genSalt(5);
+  const hashedPassword = await bcrypt.hash(req.body.password, salt);
+
+  const newUser = await new User({
     username: req.body.username,
     email: req.body.email,
-    password: req.body.password,
+    password: hashedPassword,
   });
   try {
     const savedUser = await newUser.save();
     res
-        .status(201)
-        .json(savedUser);
+        .json(savedUser)
+        .status(201);
   } catch (err) {
-    err.message = err.message
+    const errMsg = await err.message
         .split(' ')
         .filter((word) => word.includes('`'))
         .map((word) => {
-          console.log(word);
-            word.startsWith('`') ? word = word.slice(1, word.length - 1) : word;
-            return `${word} is invalid.`;
+        word.startsWith('`') ? word = word.slice(1, word.length - 1) : word;
+        return `${word} is invalid.`;
         })
         .join(' ');
+    err.msg = errMsg;
     err.statusCode = 400;
     next(err);
   }
