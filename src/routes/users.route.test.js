@@ -46,11 +46,11 @@ describe('registering new user', () => {
     await User.deleteMany();
   });
 
-  test('GET /users should return a string', async () => {
+  test('GET /users should return "Access Forbidden" when no user is logged in ', async () => {
     const body = await request(app)
       .get('/users')
-      .expect(200);
-    expect(body.text).toBe('GET /users is working');
+      .expect(401);
+    expect(body.text).toBe('Access forbidden!');
   });
 
   test('GET /users/:username returns user without password if user exists', async () => {

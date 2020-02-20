@@ -103,7 +103,6 @@ router.get('/', protectRoute, async (req, res, next) => {
     }
     res.status(200).send(user);
   } catch (error) {
-    error.message = 'Wrong username';
     error.statusCode = 400;
     next(error);
   }
