@@ -5,10 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon src/index.js",
-    "test": "jest --runInBand --detectOpenHandles",
-    "test:handle": "jest --detectOpenHandles",
-    "test:dev": "jest --watchAll --runInBand --detectOpenHandles --coverage",
-    "test:cover": "jest --coverage"
+    "test": "jest --watchAll"
   },
   "repository": {
     "type": "git",
@@ -29,7 +26,8 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.9.1"
+    "mongoose": "^5.9.1",
+    "uuid": "^3.4.0"
   },
   "devDependencies": {
     "eslint": "^6.8.0",

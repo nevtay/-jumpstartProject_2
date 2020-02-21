@@ -5,6 +5,8 @@ const userRoute = require('./routes/users.route');
 const registerRoute = require('./routes/register.route');
 const middlewares = require('./middlewares/middlewares');
 
+require('dotenv').config();
+
 app.use(express.json());
 app.use('/users', userRoute);
 app.use('/register', registerRoute);

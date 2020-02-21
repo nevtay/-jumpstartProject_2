@@ -1,7 +1,7 @@
 const jwtKeySecret = () => {
   const secretKeyIs = process.env.JWT_KEY_SECRET;
   if (!secretKeyIs) {
-    throw new Error('No token; bad secret');
+    throw new Error('bad secret');
   }
   return secretKeyIs;
 };

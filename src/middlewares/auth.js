@@ -4,7 +4,7 @@ const protectRoute = (req, res, next) => {
   try {
     // console.log(req);
     if (!req.headers.cookie) {
-      throw new Error('Access forbidden!');
+      throw new Error('Please login to continue.');
     }
     req.user = jwt.verify(req.headers.logintoken, jwtKeySecret());
     next();

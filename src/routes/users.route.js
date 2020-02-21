@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { jwtKeySecret } = require('../config/retrieveJWTSecret');
 const { protectRoute } = require('../middlewares/auth');
+const uuid = require('uuid/v4');
 
 // create JWT token function
 const createJWTToken = (myId, myUserName) => {
@@ -44,7 +45,7 @@ router.get('/:username', async (req, res, next) => {
 });
 
 // POST login validation
-router.post('/login', async (req, res, next) => {
+router.post('/login', protectRoute, async (req, res, next) => {
   try {
     const { username, password } = req.body;
 
@@ -54,10 +55,9 @@ router.post('/login', async (req, res, next) => {
       throw new Error('Invalid username');
     }
 
-    // check if password exists
-    const validPassword = await bcrypt.compare(password, userExists.password);
-    console.log(validPassword);
-    if (!validPassword) {
+    // check if password matches
+    const isPasswordValid = await bcrypt.compare(password, userExists.password);
+    if (isPasswordValid === false) {
       throw new Error('Invalid password');
     }
 
@@ -71,10 +71,9 @@ router.post('/login', async (req, res, next) => {
       httpOnly: true
     });
 
-    console.log('token: ', loginToken);
+    // console.log('token: ', loginToken);
     res.send('login success!');
   } catch (error) {
-    console.log(error);
     if (
       error.message === 'Invalid username' ||
       error.message === 'Invalid password'
@@ -90,17 +89,16 @@ router.post('/logout', (req, res) => {
   res.clearCookie('loginToken').send('You are now logged out!');
 });
 
-// default GET
+// if logged in, GET / shows user profile; else it asks for login
 router.get('/', protectRoute, async (req, res, next) => {
   try {
-    console.log(req);
     const user = await User.findOne(
       { username: req.user.username },
       '-__v -_id -password'
     );
-    if (user === null) {
-      res.status(200).send('Please login to see content.');
-    }
+    // if (user === null) {
+    //   res.status(403).send('Please login to see content.');
+    // }
     res.status(200).send(user);
   } catch (error) {
     error.statusCode = 400;
@@ -108,10 +106,28 @@ router.get('/', protectRoute, async (req, res, next) => {
   }
 });
 
-// POST logout
-// router.post('/logout', (req, res) => {
-//   res.clearCookie('token').send('Log out successful');
-// });
+router.post('/posthought', protectRoute, async (req, res, next) => {
+  const user = await User.findOne(
+    { username: req.user.username },
+    '-__v  -password'
+  );
+  if (user === null) {
+    res.status(401).send('Please login to post a thought.');
+  }
+  const userThoughts = user.thoughtsArray;
+  const newThought = {
+    id: uuid(),
+    content: req.body.content
+  };
+  try {
+    await userThoughts.push(newThought);
+    const updated = await user.save();
+    res.status(201).json(updated);
+  } catch (err) {
+    err.statusCode = 400;
+    next(err);
+  }
+});
 
 module.exports = router;
 

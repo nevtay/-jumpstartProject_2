@@ -15,9 +15,10 @@
 * /App
     * [x] "GET /" Returns 200 and endpoints 
 * /User.Route
-    * [x] "GET /users" Returns string 
+    * [x] "GET /users" Returns "Access Forbidden!" 
     * [x] "GET /users/:username" returns 200 and user profile sans password 
     * [x] "GET /users/:username" returns 404 and error message if user doesn't exist
+    * [x] Jest test login/logout on users.route
 * /Register.Route
     * [x] "POST /register" returns new user with no thoughts if registration is successful 
     * [x] "POST /register" returns error if all fields are empty
@@ -25,7 +26,10 @@
 
 ## Helpful
 * [x] use joi validation for email
+* [x] editable fields in user schema
+    [x] email
+    [x] description
 
 ## Today
-* [ ] Finish all routes
-* [ ] 1 test per route
+* [x] POST and DELETE thoughts from thoughtArrays
+* [x] PATCH and DELETE users

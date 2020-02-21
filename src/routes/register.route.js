@@ -21,21 +21,16 @@ router.post('/', async (req, res, next) => {
     res.send('Username already exists - please try another username.');
   }
 
-  const { error } = emailValidation(req.body);
+  const { error } = await emailValidation(req.body);
   if (error) {
-    console.log(error.details);
     res.status(400);
     res.send(error.details[0].message);
   }
 
-  // hashing the password
-  const salt = await bcrypt.genSalt(5);
-  const hashedPassword = await bcrypt.hash(req.body.password, salt);
-
-  const newUser = await new User({
+  const newUser = new User({
     username: req.body.username,
     email: req.body.email,
-    password: hashedPassword !== '' ? hashedPassword : ''
+    password: req.body.password
   });
   try {
     const savedUser = await newUser.save();

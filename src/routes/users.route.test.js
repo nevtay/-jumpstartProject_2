@@ -3,14 +3,18 @@ const app = require('../app');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const User = require('../models/User');
-// require('../utils/db');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { jwtKeySecret } = require('../config/retrieveJWTSecret');
+
+jest.mock('jsonwebtoken');
 
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
 mongoose.set('useUnifiedTopology', true);
 
-describe('registering new user', () => {
+describe('/users', () => {
   // setup mongodb connection before each test
   let mongoserver;
   beforeAll(async () => {
@@ -33,7 +37,7 @@ describe('registering new user', () => {
   beforeEach(async () => {
     const testUserProfile = [
       {
-        username: 'usernameee',
+        username: 'bob123',
         email: 'email@email.com',
         password: 'password',
         thoughtsArray: []
@@ -50,14 +54,14 @@ describe('registering new user', () => {
     const body = await request(app)
       .get('/users')
       .expect(401);
-    expect(body.text).toBe('Access forbidden!');
+    expect(body.text).toBe('Please login to continue.');
   });
 
   test('GET /users/:username returns user without password if user exists', async () => {
     const { body: actualUser } = await request(app)
-      .get('/users/usernameee')
+      .get('/users/bob123')
       .expect(200);
-    expect(actualUser).toHaveProperty('username', 'usernameee');
+    expect(actualUser).toHaveProperty('username', 'bob123');
     expect(actualUser).toHaveProperty('email', 'email@email.com');
     expect(actualUser).toHaveProperty('thoughtsArray', []);
     expect(actualUser).not.toHaveProperty('password');
@@ -69,5 +73,132 @@ describe('registering new user', () => {
     expect(body.text).toEqual(
       'Uh oh - user "thisUserDoesNotExist" doesn\'t exist!'
     );
+  });
+  describe('/users/login', () => {
+    test('should request user to login if user is not logged in', async () => {
+      const body = await request(app)
+        .get('/users')
+        .expect(401);
+      expect(body.text).toBe('Please login to continue.');
+    });
+
+    test('login fails if user does not exist', async () => {
+      const invalidUser = {
+        username: 'alice321',
+        password: 'password'
+      };
+
+      const response = await request(app)
+        .post('/users/login')
+        .send(invalidUser)
+        .set('Cookie', 'token=valid-token');
+      expect(response.text).toEqual('Invalid username');
+    });
+
+    test('login fails if password is invalid', async () => {
+      const expectedUser = {
+        username: 'bob123',
+        password: 'pass'
+      };
+
+      const response = await request(app)
+        .post('/users/login')
+        .send(expectedUser)
+        .set('Cookie', 'token=valid-token');
+      expect(response.text).toEqual('Invalid password');
+    });
+
+    test('login succeeds if username and password are valid', async () => {
+      const expectedUser = {
+        username: 'bob123',
+        password: 'password'
+      };
+
+      const response = await request(app)
+        .post('/users/login')
+        .send(expectedUser)
+        .set('Cookie', 'token=valid-token');
+      expect(response.text).toEqual('login success!');
+    });
+
+    test('on login, users/ returns users profile', async () => {
+      // mock being logged in
+      const expectedUser = {
+        username: 'bob123',
+        email: 'email@email.com',
+        password: 'password',
+        thoughtsArray: []
+      };
+      jwt.verify.mockReturnValueOnce({ username: expectedUser.username });
+
+      const response = await request(app)
+        .get('/users')
+        .set('Cookie', 'token=valid-token');
+      // console.log(response);
+      expect(response.body.username).toEqual('bob123');
+      expect(response.body.email).toEqual('email@email.com');
+      expect(response.body.thoughtsArray).toStrictEqual([]);
+    });
+
+    describe('users/logout', () => {
+      test('logout notifies user with logout message', async () => {
+        const expectedUser = {
+          username: 'bob123',
+          email: 'email@email.com',
+          password: 'password',
+          thoughtsArray: []
+        };
+        jwt.verify.mockReturnValueOnce({ username: expectedUser.username });
+
+        const response = await request(app)
+          .post('/users/logout')
+          .expect(200);
+        expect(response.text).toEqual('You are now logged out!');
+      });
+
+      test("posting thoughts fails if user isn't logged in", async () => {
+        const testContent = {
+          content: 'test content!'
+        };
+
+        const expectedUser = {
+          username: 'bob123',
+          email: 'email@email.com',
+          password: 'password',
+          thoughtsArray: []
+        };
+        jwt.verify.mockReturnValueOnce({ username: expectedUser.username });
+
+        const body = await request(app)
+          .post('/users/posthought')
+          .send(testContent);
+        expect(body.text).toEqual('Please login to continue.');
+      });
+
+      test.only('posting thoughts succeeds if user is logged in', async () => {
+        const expectedUser = {
+          username: 'bob123',
+          email: 'email@email.com',
+          password: 'password',
+          thoughtsArray: []
+        };
+
+        jwt.verify.mockReturnValueOnce({
+          username: expectedUser.username
+        });
+
+        const newThought = {
+          content: 'hello'
+        };
+
+        await expectedUser.thoughtsArray.push(newThought);
+
+        const response = await request(app)
+          .post('/users/posthought')
+          .set('Cookie', 'token=valid-token');
+        console.log(response);
+        expect(response).toEqual('');
+      });
+    });
   });
 });
