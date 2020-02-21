@@ -33,3 +33,14 @@
 ## Today
 * [x] POST and DELETE thoughts from thoughtArrays
 * [x] PATCH and DELETE users
+
+## User Routes
+* [x] GET /users
+* [x] GET /users/:username
+* [x] POST /users/login
+* [x] POST /users/logout
+* [x] POST /users/posthought
+
+## Registration Routes
+* [x] GET /register (for testing)
+* [x] POST /register

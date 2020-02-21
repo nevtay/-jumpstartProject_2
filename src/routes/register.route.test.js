@@ -59,7 +59,7 @@ describe('registering new user', () => {
     expect(user.username).toBe(expectedUser.username);
     expect(user.password).not.toBe(expectedUser.password);
     expect(user.thoughtsArray).toStrictEqual([]);
-    expect(user['Joined On']).toContain(new Date().getFullYear());
+    expect(user.joinedOn).toContain(new Date().getFullYear());
   });
 
   describe('registering with invalid or missing inputs', () => {

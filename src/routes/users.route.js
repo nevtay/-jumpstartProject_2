@@ -45,7 +45,7 @@ router.get('/:username', async (req, res, next) => {
 });
 
 // POST login validation
-router.post('/login', protectRoute, async (req, res, next) => {
+router.post('/login', async (req, res, next) => {
   try {
     const { username, password } = req.body;
 
@@ -54,14 +54,13 @@ router.post('/login', protectRoute, async (req, res, next) => {
     if (userExists === null) {
       throw new Error('Invalid username');
     }
-
     // check if password matches
     const isPasswordValid = await bcrypt.compare(password, userExists.password);
     if (isPasswordValid === false) {
       throw new Error('Invalid password');
     }
-
     // create token with JWT
+    // console.log(userExists);
     const loginToken = createJWTToken(userExists._id, userExists.username);
     const oneDay = 24 * 60 * 60 * 1000;
     const expiresInOneDay = new Date(Date.now() + oneDay);
@@ -72,7 +71,7 @@ router.post('/login', protectRoute, async (req, res, next) => {
     });
 
     // console.log('token: ', loginToken);
-    res.send('login success!');
+    res.send('Login success');
   } catch (error) {
     if (
       error.message === 'Invalid username' ||
@@ -96,9 +95,6 @@ router.get('/', protectRoute, async (req, res, next) => {
       { username: req.user.username },
       '-__v -_id -password'
     );
-    // if (user === null) {
-    //   res.status(403).send('Please login to see content.');
-    // }
     res.status(200).send(user);
   } catch (error) {
     error.statusCode = 400;
@@ -107,10 +103,7 @@ router.get('/', protectRoute, async (req, res, next) => {
 });
 
 router.post('/posthought', protectRoute, async (req, res, next) => {
-  const user = await User.findOne(
-    { username: req.user.username },
-    '-__v  -password'
-  );
+  const user = await User.findOne({ username: req.user.username }, '-__v');
   if (user === null) {
     res.status(401).send('Please login to post a thought.');
   }
@@ -120,9 +113,10 @@ router.post('/posthought', protectRoute, async (req, res, next) => {
     content: req.body.content
   };
   try {
-    await userThoughts.push(newThought);
+    userThoughts.push(newThought);
     const updated = await user.save();
-    res.status(201).json(updated);
+    const { password, ...rest } = updated.toObject();
+    res.status(201).json(rest);
   } catch (err) {
     err.statusCode = 400;
     next(err);

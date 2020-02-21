@@ -54,7 +54,7 @@ describe('/users', () => {
     const body = await request(app)
       .get('/users')
       .expect(401);
-    expect(body.text).toBe('Please login to continue.');
+    expect(body.text).toBe('Access forbidden!');
   });
 
   test('GET /users/:username returns user without password if user exists', async () => {
@@ -74,12 +74,13 @@ describe('/users', () => {
       'Uh oh - user "thisUserDoesNotExist" doesn\'t exist!'
     );
   });
+
   describe('/users/login', () => {
     test('should request user to login if user is not logged in', async () => {
       const body = await request(app)
         .get('/users')
         .expect(401);
-      expect(body.text).toBe('Please login to continue.');
+      expect(body.text).toBe('Access forbidden!');
     });
 
     test('login fails if user does not exist', async () => {
@@ -118,10 +119,10 @@ describe('/users', () => {
         .post('/users/login')
         .send(expectedUser)
         .set('Cookie', 'token=valid-token');
-      expect(response.text).toEqual('login success!');
+      expect(response.text).toEqual('Login success');
     });
 
-    test('on login, users/ returns users profile', async () => {
+    test('if logged in, visiting /users returns user profile', async () => {
       // mock being logged in
       const expectedUser = {
         username: 'bob123',
@@ -133,8 +134,8 @@ describe('/users', () => {
 
       const response = await request(app)
         .get('/users')
-        .set('Cookie', 'token=valid-token');
-      // console.log(response);
+        .set('Cookie', 'loginToken=valid-token');
+      console.log(response.body);
       expect(response.body.username).toEqual('bob123');
       expect(response.body.email).toEqual('email@email.com');
       expect(response.body.thoughtsArray).toStrictEqual([]);
@@ -167,15 +168,15 @@ describe('/users', () => {
           password: 'password',
           thoughtsArray: []
         };
-        jwt.verify.mockReturnValueOnce({ username: expectedUser.username });
+        // jwt.verify.mockReturnValueOnce({ username: expectedUser.username });
 
         const body = await request(app)
           .post('/users/posthought')
           .send(testContent);
-        expect(body.text).toEqual('Please login to continue.');
+        expect(body.text).toEqual('Access forbidden!');
       });
 
-      test.only('posting thoughts succeeds if user is logged in', async () => {
+      test('posting thoughts succeeds if user is logged in', async () => {
         const expectedUser = {
           username: 'bob123',
           email: 'email@email.com',
@@ -191,13 +192,17 @@ describe('/users', () => {
           content: 'hello'
         };
 
-        await expectedUser.thoughtsArray.push(newThought);
+        expectedUser.thoughtsArray.push(newThought);
 
         const response = await request(app)
           .post('/users/posthought')
-          .set('Cookie', 'token=valid-token');
-        console.log(response);
-        expect(response).toEqual('');
+          .send(newThought)
+          .set('Cookie', 'loginToken=valid-token');
+        expect(response.body.thoughtsArray).toHaveLength(1);
+        expect(response.body.thoughtsArray[0].content).toEqual('hello');
+        expect(response.body.thoughtsArray[0].updatedAt).toContain(
+          String(new Date().getFullYear())
+        );
       });
     });
   });

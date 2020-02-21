@@ -15,7 +15,7 @@ const thoughtSchema = new Schema(
   },
   {
     timestamps: {
-      createdAt: 'Thought conceived on'
+      createdAt: 'thoughtOn'
     }
   }
 );
@@ -49,8 +49,8 @@ const userSchema = new Schema(
   },
   {
     timestamps: {
-      createdAt: 'Joined On',
-      updatedAt: 'Updated On'
+      createdAt: 'joinedOn',
+      updatedAt: 'updatedOn'
     }
   }
 );

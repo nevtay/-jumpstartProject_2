@@ -4,10 +4,12 @@ const app = express();
 const userRoute = require('./routes/users.route');
 const registerRoute = require('./routes/register.route');
 const middlewares = require('./middlewares/middlewares');
+const cookieParser = require('cookie-parser');
 
 require('dotenv').config();
 
 app.use(express.json());
+app.use(cookieParser());
 app.use('/users', userRoute);
 app.use('/register', registerRoute);
 app.get('/', (req, res) => {

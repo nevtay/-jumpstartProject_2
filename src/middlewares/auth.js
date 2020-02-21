@@ -3,10 +3,10 @@ const { jwtKeySecret } = require('../config/retrieveJWTSecret');
 const protectRoute = (req, res, next) => {
   try {
     // console.log(req);
-    if (!req.headers.cookie) {
-      throw new Error('Please login to continue.');
+    if (!req.cookies.loginToken) {
+      throw new Error('Access forbidden!');
     }
-    req.user = jwt.verify(req.headers.logintoken, jwtKeySecret());
+    req.user = jwt.verify(req.cookies.loginToken, jwtKeySecret());
     next();
   } catch (err) {
     // console.log(err);
