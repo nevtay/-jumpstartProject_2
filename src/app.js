@@ -10,8 +10,6 @@ require('dotenv').config();
 
 app.use(express.json());
 app.use(cookieParser());
-app.use('/users', userRoute);
-app.use('/register', registerRoute);
 app.get('/', (req, res) => {
   res.status(200).json({
     '0': 'GET /users',
@@ -24,6 +22,8 @@ app.get('/', (req, res) => {
     '7': 'DELETE /users/:username/tweets'
   });
 });
+app.use('/users', userRoute);
+app.use('/register', registerRoute);
 
 app.use(middlewares.defaultErrorHandler);
 
