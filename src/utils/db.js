@@ -1,13 +1,13 @@
 // imports and configs
-const mongoose = require('mongoose');
 require('dotenv').config();
+const mongoose = require('mongoose');
 
-mongoose.connect(process.env.DB_CONNECT, {
-  useNewUrlParser: true, // prevent deprecation warnings
-  useUnifiedTopology: true,
-  useFindAndModify: false, // For find one and update
-  useCreateIndex: true // for creating index with unique
-});
+mongoose.connect(
+  'mongodb+srv://testuser:abc123abc@cluster0-pek3w.mongodb.net/test?retryWrites=true&w=majority',
+  {
+    useNewUrlParser: true
+  }
+);
 
 const db = mongoose.connection;
 
