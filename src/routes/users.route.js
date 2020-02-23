@@ -111,7 +111,7 @@ router.post('/posthought', protectRoute, async (req, res, next) => {
     userThoughts.push(newThought);
     const updated = await user.save();
     const { password, ...rest } = updated.toObject();
-    res.status(201).json(rest);
+    res.status(201).send(`"${newThought.content}" was posted successfully!`);
   } catch (err) {
     err.statusCode = 400;
     next(err);
@@ -150,6 +150,7 @@ router.patch('/', protectRoute, async (req, res, next) => {
     },
     { "new": true }
     )
+  await updatedUser.save()
   res
   .status(201)
   .json({
