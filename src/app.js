@@ -5,6 +5,12 @@ const userRoute = require('./routes/users.route');
 const registerRoute = require('./routes/register.route');
 const middlewares = require('./middlewares/middlewares');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
+
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  credentials: true,
+}
 
 require('dotenv').config();
 
