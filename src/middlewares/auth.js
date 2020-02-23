@@ -2,7 +2,6 @@ const jwt = require('jsonwebtoken');
 const { jwtKeySecret } = require('../config/retrieveJWTSecret');
 const protectRoute = (req, res, next) => {
   try {
-    // console.log(req);
     if (!req.cookies.loginToken) {
       throw new Error('Access forbidden!');
     }

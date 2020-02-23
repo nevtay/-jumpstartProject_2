@@ -1,11 +1,12 @@
 const request = require('supertest');
 const app = require('../app');
 const mongoose = require('mongoose');
-const { MongoMemoryServer } = require('mongodb-memory-server');
+const {MongoMemoryServer} = require('mongodb-memory-server');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { jwtKeySecret } = require('../config/retrieveJWTSecret');
+const {jwtKeySecret} = require('../config/retrieveJWTSecret');
+const cookieParser = require('cookie-parser');
 
 jest.mock('jsonwebtoken');
 
@@ -40,8 +41,8 @@ describe('/users', () => {
         username: 'bob123',
         email: 'email@email.com',
         password: 'password',
-        thoughtsArray: []
-      }
+        thoughtsArray: [],
+      },
     ];
     await User.create(testUserProfile);
   });
@@ -52,73 +53,73 @@ describe('/users', () => {
 
   test('GET /users should return "Access Forbidden" when no user is logged in ', async () => {
     const body = await request(app)
-      .get('/users')
-      .expect(401);
+        .get('/users')
+        .expect(401);
     expect(body.text).toBe('Access forbidden!');
   });
 
   test('GET /users/:username returns user without password if user exists', async () => {
-    const { body: actualUser } = await request(app)
-      .get('/users/bob123')
-      .expect(200);
+    const {body: actualUser} = await request(app)
+        .get('/users/bob123')
+        .expect(200);
     expect(actualUser).toHaveProperty('username', 'bob123');
     expect(actualUser).toHaveProperty('email', 'email@email.com');
     expect(actualUser).toHaveProperty('thoughtsArray', []);
     expect(actualUser).not.toHaveProperty('password');
   });
 
-  test("GET /users/:username returns error message if user doesn't exist", async () => {
+  test('GET /users/:username returns error message if user doesn\'t exist', async () => {
     const body = await request(app).get('/users/thisUserDoesNotExist');
     expect(body.statusCode).toBe(404);
     expect(body.text).toEqual(
-      'Uh oh - user "thisUserDoesNotExist" doesn\'t exist!'
+        'Uh oh - user "thisUserDoesNotExist" doesn\'t exist!',
     );
   });
 
   describe('/users/login', () => {
     test('should request user to login if user is not logged in', async () => {
       const body = await request(app)
-        .get('/users')
-        .expect(401);
+          .get('/users')
+          .expect(401);
       expect(body.text).toBe('Access forbidden!');
     });
 
     test('login fails if user does not exist', async () => {
       const invalidUser = {
         username: 'alice321',
-        password: 'password'
+        password: 'password',
       };
 
       const response = await request(app)
-        .post('/users/login')
-        .send(invalidUser)
-        .set('Cookie', 'token=valid-token');
+          .post('/users/login')
+          .send(invalidUser)
+          .set('Cookie', 'token=valid-token');
       expect(response.text).toEqual('Invalid username');
     });
 
     test('login fails if password is invalid', async () => {
       const expectedUser = {
         username: 'bob123',
-        password: 'pass'
+        password: 'pass',
       };
 
       const response = await request(app)
-        .post('/users/login')
-        .send(expectedUser)
-        .set('Cookie', 'token=valid-token');
+          .post('/users/login')
+          .send(expectedUser)
+          .set('Cookie', 'token=valid-token');
       expect(response.text).toEqual('Invalid password');
     });
 
-    test('login succeeds if username and password are valid', async () => {
+    test('login succeeds only if username and password are valid', async () => {
       const expectedUser = {
         username: 'bob123',
-        password: 'password'
+        password: 'password',
       };
 
       const response = await request(app)
-        .post('/users/login')
-        .send(expectedUser)
-        .set('Cookie', 'token=valid-token');
+          .post('/users/login')
+          .send(expectedUser)
+          .set('Cookie', 'token=valid-token');
       expect(response.text).toEqual('Login success');
     });
 
@@ -128,14 +129,14 @@ describe('/users', () => {
         username: 'bob123',
         email: 'email@email.com',
         password: 'password',
-        thoughtsArray: []
+        thoughtsArray: [],
       };
-      jwt.verify.mockReturnValueOnce({ username: expectedUser.username });
+      jwt.verify.mockReturnValueOnce({username: expectedUser.username});
 
       const response = await request(app)
-        .get('/users')
-        .set('Cookie', 'loginToken=valid-token');
-      console.log(response.body);
+          .get('/users')
+          .set('Cookie', 'loginToken=valid-token');
+      // console.log(response);
       expect(response.body.username).toEqual('bob123');
       expect(response.body.email).toEqual('email@email.com');
       expect(response.body.thoughtsArray).toStrictEqual([]);
@@ -147,62 +148,104 @@ describe('/users', () => {
           username: 'bob123',
           email: 'email@email.com',
           password: 'password',
-          thoughtsArray: []
+          thoughtsArray: [],
         };
-        jwt.verify.mockReturnValueOnce({ username: expectedUser.username });
+        jwt.verify.mockReturnValueOnce({username: expectedUser.username});
 
         const response = await request(app)
-          .post('/users/logout')
-          .expect(200);
+            .post('/users/logout')
+            .expect(200);
         expect(response.text).toEqual('You are now logged out!');
       });
 
-      test("posting thoughts fails if user isn't logged in", async () => {
+      test('posting thoughts fails if user isn\'t logged in', async () => {
         const testContent = {
-          content: 'test content!'
+          content: 'test content!',
         };
-
-        const expectedUser = {
-          username: 'bob123',
-          email: 'email@email.com',
-          password: 'password',
-          thoughtsArray: []
-        };
-        // jwt.verify.mockReturnValueOnce({ username: expectedUser.username });
 
         const body = await request(app)
-          .post('/users/posthought')
-          .send(testContent);
+            .post('/users/posthought')
+            .send(testContent);
         expect(body.text).toEqual('Access forbidden!');
       });
 
-      test('posting thoughts succeeds if user is logged in', async () => {
+      test('posting thoughts only succeeds if user is logged in', async () => {
         const expectedUser = {
           username: 'bob123',
           email: 'email@email.com',
           password: 'password',
-          thoughtsArray: []
+          thoughtsArray: [],
         };
 
         jwt.verify.mockReturnValueOnce({
-          username: expectedUser.username
+          username: expectedUser.username,
         });
 
         const newThought = {
-          content: 'hello'
+          content: 'hello',
         };
 
         expectedUser.thoughtsArray.push(newThought);
 
         const response = await request(app)
-          .post('/users/posthought')
-          .send(newThought)
-          .set('Cookie', 'loginToken=valid-token');
+            .post('/users/posthought')
+            .send(newThought)
+            .set('Cookie', 'loginToken=valid-token');
         expect(response.body.thoughtsArray).toHaveLength(1);
         expect(response.body.thoughtsArray[0].content).toEqual('hello');
         expect(response.body.thoughtsArray[0].updatedAt).toContain(
-          String(new Date().getFullYear())
+            String(new Date().getFullYear()),
         );
+      });
+
+      test('patch fail if new password is invalid', async () => {
+        const expectedUser = {
+          username: 'bob123',
+          email: 'email@email.com',
+          password: 'password',
+          thoughtsArray: [],
+        };
+
+        jwt.verify.mockReturnValueOnce({
+          username: expectedUser.username,
+        });
+
+        const changedInfo = {
+          newEmail: "newEmail@gmail.com",
+          newPassword: "newPassword"
+        }
+
+        const response = await request(app)
+            .patch('/users')
+            .send(changedInfo)
+            .set('Cookie', 'loginToken=valid-token');
+        expect(response.text).toEqual('Password requires one lowercase letter, one uppercase letter, one number, and one special character');
+      });
+
+      test('patch succeeds if all updated fields are valid', async () => {
+        const expectedUser = {
+          username: 'bob123',
+          email: 'email@email.com',
+          password: 'password',
+          thoughtsArray: [],
+        };
+
+        jwt.verify.mockReturnValueOnce({
+          username: expectedUser.username,
+        });
+
+        const changedInfo = {
+          newEmail: "newEmail@gmail.com",
+          newPassword: "newPassword123!"
+        }
+
+        const response = await request(app)
+            .patch('/users')
+            .send(changedInfo)
+            .set('Cookie', 'loginToken=valid-token');
+        expect(response.body.message).toEqual('updated successfully');
+        expect(response.body.data.email).not.toEqual(expectedUser.email);
+        expect(response.body.data.email).toEqual(changedInfo.newEmail);
       });
     });
   });

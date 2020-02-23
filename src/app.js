@@ -8,8 +8,8 @@ const cookieParser = require('cookie-parser');
 
 require('dotenv').config();
 
-app.use(express.json());
 app.use(cookieParser());
+app.use(express.json());
 app.get('/', (req, res) => {
   res.status(200).json({
     '0': 'GET /users',
@@ -19,7 +19,7 @@ app.get('/', (req, res) => {
     '4': 'PATCH /users/:username',
     '5': 'DELETE /users/:username',
     '6': 'POST /users/:username/tweets',
-    '7': 'DELETE /users/:username/tweets'
+    '7': 'DELETE /users/:username/tweets',
   });
 });
 app.use('/users', userRoute);

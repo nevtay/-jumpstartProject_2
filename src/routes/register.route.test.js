@@ -1,18 +1,16 @@
-/*eslint-disable-next-line*/
+/* eslint-disable-next-line*/
 const request = require('supertest');
 const app = require('../app');
 const mongoose = require('mongoose');
-const { MongoMemoryServer } = require('mongodb-memory-server');
+const {MongoMemoryServer} = require('mongodb-memory-server');
 const User = require('../models/User');
+const cookieParser = require('cookie-parser');
 require('../utils/db');
 
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
 mongoose.set('useUnifiedTopology', true);
-
-// const jwt = require('jsonwebtoken');
-// jest.mock('jsonwebtoken');
 
 describe('registering new user', () => {
   let mongoserver;
@@ -36,8 +34,8 @@ describe('registering new user', () => {
       {
         username: 'myUser',
         email: 'myuser@gmail.com',
-        password: 'myuserabc123'
-      }
+        password: 'myuserabc123',
+      },
     ];
     await User.create(usersData);
   });
@@ -50,12 +48,12 @@ describe('registering new user', () => {
     const expectedUser = {
       username: 'notmyUser',
       email: 'notmyuser@gmail.com',
-      password: 'myuserabc123'
+      password: 'myuserABC123!',
     };
-    const { body: user } = await request(app)
-      .post('/register')
-      .send(expectedUser)
-      .expect(201);
+    const {body: user} = await request(app)
+        .post('/register')
+        .send(expectedUser)
+        .expect(201);
     expect(user.username).toBe(expectedUser.username);
     expect(user.password).not.toBe(expectedUser.password);
     expect(user.thoughtsArray).toStrictEqual([]);
@@ -67,12 +65,12 @@ describe('registering new user', () => {
       const expectedUser = {
         username: '',
         email: '',
-        password: ''
+        password: '',
       };
       const body = await request(app)
-        .post('/register')
-        .send(expectedUser)
-        .expect(400);
+          .post('/register')
+          .send(expectedUser)
+          .expect(400);
       expect(body.text).toEqual('"username" is not allowed to be empty');
     });
 
@@ -80,12 +78,12 @@ describe('registering new user', () => {
       const expectedUser = {
         username: 'abcrasd',
         email: 'notemail.com',
-        password: 'iamahaiku'
+        password: 'iamahaiku',
       };
       const body = await request(app)
-        .post('/register')
-        .send(expectedUser)
-        .expect(400);
+          .post('/register')
+          .send(expectedUser)
+          .expect(400);
       expect(body.text).toEqual('"email" must be a valid email');
     });
 
@@ -93,14 +91,14 @@ describe('registering new user', () => {
       const expectedUser = {
         username: 'hi',
         email: 'notemail@gmail.com',
-        password: 'iamahaiku'
+        password: 'iamahaiku',
       };
       const body = await request(app)
-        .post('/register')
-        .send(expectedUser)
-        .expect(400);
+          .post('/register')
+          .send(expectedUser)
+          .expect(400);
       expect(body.text).toEqual(
-        '"username" length must be at least 3 characters long'
+          '"username" length must be at least 3 characters long',
       );
     });
   });

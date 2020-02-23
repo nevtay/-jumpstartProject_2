@@ -9,10 +9,23 @@ const emailValidation = data => {
       .email({ tlds: { allow: false } })
       .required(),
     password: Joi.string()
-      .min(5)
+      .regex(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/)
       .required()
   });
   return schema.validate(data);
 };
 
-module.exports = { emailValidation };
+const updateInfoValidation = data => {
+  const schema = Joi.object().keys({
+    newEmail: Joi.string()
+      .email({ tlds: { allow: false } })
+      .required(),
+    newPassword: Joi.string()
+      .min(5)
+      .regex(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/)
+      .required()
+  });
+  return schema.validate(data);
+};
+
+module.exports = { emailValidation, updateInfoValidation };
