@@ -142,22 +142,6 @@ describe('/users', () => {
       expect(response.body.thoughtsArray).toStrictEqual([]);
     });
 
-    describe('users/logout', () => {
-      test('logout notifies user with logout message', async () => {
-        const expectedUser = {
-          username: 'bob123',
-          email: 'email@email.com',
-          password: 'password',
-          thoughtsArray: [],
-        };
-        jwt.verify.mockReturnValueOnce({username: expectedUser.username});
-
-        const response = await request(app)
-            .post('/users/logout')
-            .expect(200);
-        expect(response.text).toEqual('You are now logged out!');
-      });
-
       test('posting thoughts fails if user isn\'t logged in', async () => {
         const testContent = {
           content: 'test content!',
@@ -245,4 +229,3 @@ describe('/users', () => {
       });
     });
   });
-});

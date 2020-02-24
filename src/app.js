@@ -31,6 +31,10 @@ app.get('/', (req, res) => {
 });
 app.use('/users', userRoute);
 app.use('/register', registerRoute);
+// logout
+app.post('/logout', (req, res) => {
+  res.clearCookie('loginToken').send('You are now logged out!');
+});
 
 app.use(middlewares.defaultErrorHandler);
 

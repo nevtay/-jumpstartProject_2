@@ -19,4 +19,13 @@ describe('/', () => {
     });
     done();
   });
+
+  describe('/logout', () => {
+    test('logout notifies user with logout message', async () => {
+      const response = await request(app)
+          .post('/logout')
+          .expect(200);
+      expect(response.text).toEqual('You are now logged out!');
+    });
 });
+})

@@ -151,8 +151,7 @@ router.patch('/', protectRoute, async (req, res, next) => {
     { "new": true }
     )
   await updatedUser.save()
-  res
-  .status(201)
+  res.status(201)
   .json({
     message: "updated successfully", 
     data: updatedUser
@@ -164,11 +163,6 @@ router.patch('/', protectRoute, async (req, res, next) => {
     next(err);
   }
 })
-
-// logout
-router.post('/logout', (req, res) => {
-  res.clearCookie('loginToken').send('You are now logged out!');
-});
 
 module.exports = router;
 
