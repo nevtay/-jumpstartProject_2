@@ -191,11 +191,7 @@ describe('/users', () => {
             .post('/users/posthought')
             .send(newThought)
             .set('Cookie', 'loginToken=valid-token');
-        expect(response.body.thoughtsArray).toHaveLength(1);
-        expect(response.body.thoughtsArray[0].content).toEqual('hello');
-        expect(response.body.thoughtsArray[0].updatedAt).toContain(
-            String(new Date().getFullYear()),
-        );
+        expect(response.text).toEqual(`"hello" was posted successfully!`);
       });
 
       test('patch fail if new password is invalid', async () => {
