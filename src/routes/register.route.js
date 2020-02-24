@@ -2,7 +2,7 @@ const express = require('express');
 const User = require('../models/User');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
-const { emailValidation } = require('../utils/validation');
+const { registerValidation } = require('../utils/validation');
 
 router.get('/', async (req, res) => {
   res.send('path to /register is working').status(200);
@@ -19,26 +19,25 @@ router.post('/', async (req, res, next) => {
   });
   if (usernameAlreadyExists) {
     res.send('Username already exists - please try another username.');
-  }
-
-  const { error } = await emailValidation(req.body);
+  }   
+  
+  try {
+  const { error } = await registerValidation(req.body);
   if (error) {
-    res.status(400);
-    res.send(error.details[0].message);
-  }
-
+    throw new Error(error.details[0].message)
+  } else {
   const newUser = new User({
     username: req.body.username,
     email: req.body.email,
     password: req.body.password
   });
-  try {
-    const savedUser = await newUser.save();
-    res.status(201).json(savedUser);
+  const savedUser = await newUser.save();
+  res.status(201).json(savedUser);
+  }
   } catch (err) {
     err.statusCode = 400;
     next(err);
   }
-});
+})
 
 module.exports = router;

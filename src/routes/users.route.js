@@ -58,6 +58,7 @@ router.post('/login', async (req, res, next) => {
     // check if password matches
     const isPasswordValid = await bcrypt.compare(password, userExists.password);
     if (isPasswordValid === false) {
+      console.log(userExists.password, isPasswordValid)
       throw new Error('Invalid password');
     }
     // create token with JWT
@@ -111,7 +112,8 @@ router.post('/posthought', protectRoute, async (req, res, next) => {
     userThoughts.push(newThought);
     const updated = await user.save();
     const { password, ...rest } = updated.toObject();
-    res.status(201).send(`"${newThought.content}" was posted successfully!`);
+    console.log(password)
+    res.status(201).json(`"${newThought.content}" was posted successfully!`);
   } catch (err) {
     err.statusCode = 400;
     next(err);
@@ -121,35 +123,29 @@ router.post('/posthought', protectRoute, async (req, res, next) => {
 //Logged in: PATCH /users lets user change their password and/or email
 router.patch('/', protectRoute, async (req, res, next) => {
   const user = await User.findOne({ username: req.user.username }, '-__v');
+  let { newEmail, newPassword } = req.body
+  let { email: currentEmail } = user
   if (user === null) {
     res.status(401).send('Please login to change your particulars.');
   }
-  let {password: currentPass, email: currentEmail} = user
-  
-  // check if new password and email are valid
-  const { error } = await updateInfoValidation(req.body);
-  if (error) {
-    error.statusCode = 400;
-    error.message = "Password requires one lowercase letter, one uppercase letter, one number, and one special character"
-    next(error)
-  }
-  
   try {
-    // check if new email already exists in db
   if (currentEmail === req.body.newEmail) {
     throw new Error("Email already exists! Please choose another email")
   }
-  const newPassHashed = await bcrypt.hash(req.body.newPassword, 10);
+  const { error } = await updateInfoValidation(req.body);
+  if (error) {
+    throw new Error(error.details[0].message)
+  }
+  const newPassHashed = await bcrypt.hash(newPassword, 10);
   const updatedUser = await User.findOneAndUpdate(
     { username: user.username },
-    { 
-      "$set": {
-        "email": req.body.newEmail, 
+    { "$set": {
+        "email": newEmail,
         "password": newPassHashed 
-      }
-    },
+      }},
     { "new": true }
     )
+
   await updatedUser.save()
   res.status(201)
   .json({
@@ -157,9 +153,7 @@ router.patch('/', protectRoute, async (req, res, next) => {
     data: updatedUser
   })
   } catch (err) {
-    if (err.message === "Email already exists! Please choose another email") {
     err.statusCode = 400;
-    }
     next(err);
   }
 })
