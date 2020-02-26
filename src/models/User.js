@@ -55,9 +55,13 @@ const userSchema = new Schema(
   }
 );
 
+// check if the password has been hashed
 userSchema.pre('save', async function(next) {
-  const rounds = 10;
-  this.password = await bcrypt.hash(this.password, rounds);
+  if(this.isModified("password")){
+    const rounds = 10;
+
+    this.password = await bcrypt.hash(this.password, 10);
+  }
   next();
 });
 

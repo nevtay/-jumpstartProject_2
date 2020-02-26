@@ -175,7 +175,7 @@ describe('/users', () => {
             .post('/users/posthought')
             .send(newThought)
             .set('Cookie', 'loginToken=valid-token');
-        expect(response.text).toEqual(`"hello" was posted successfully!`);
+        expect(response.text).toEqual(`hello was posted successfully!`);
       });
 
       test('patch fail if new password is invalid', async () => {
@@ -199,7 +199,7 @@ describe('/users', () => {
             .patch('/users')
             .send(changedInfo)
             .set('Cookie', 'loginToken=valid-token');
-        expect(response.text).toEqual('Password requires one lowercase letter, one uppercase letter, one number, and one special character');
+        expect(response.text).toContain('fails to match the required pattern');
       });
 
       test('patch succeeds if all updated fields are valid', async () => {
