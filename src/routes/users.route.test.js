@@ -93,7 +93,7 @@ describe('/users', () => {
       const response = await request(app)
           .post('/users/login')
           .send(invalidUser)
-          .set('Cookie', 'token=valid-token');
+          .set('Cookie', 'loginToken=valid-token');
       expect(response.text).toEqual('Invalid username');
     });
 
@@ -106,7 +106,7 @@ describe('/users', () => {
       const response = await request(app)
           .post('/users/login')
           .send(expectedUser)
-          .set('Cookie', 'token=valid-token');
+          .set('Cookie', 'loginToken=valid-token');
       expect(response.text).toEqual('Invalid password');
     });
 
@@ -119,7 +119,7 @@ describe('/users', () => {
       const response = await request(app)
           .post('/users/login')
           .send(expectedUser)
-          .set('Cookie', 'token=valid-token');
+          .set('Cookie', 'loginToken=valid-token');
       expect(response.text).toEqual('Login success');
     });
 
