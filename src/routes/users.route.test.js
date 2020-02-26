@@ -179,10 +179,11 @@ describe('/users', () => {
       });
 
       test('patch fail if new password is invalid', async () => {
+        const testPassword = await bcrypt.hash('password', 10)
         const expectedUser = {
           username: 'bob123',
           email: 'email@email.com',
-          password: 'password',
+          password: testPassword,
           thoughtsArray: [],
         };
 
