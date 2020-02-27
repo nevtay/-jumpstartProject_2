@@ -24,7 +24,7 @@ jobs:
       - checkout
       - run:
           name: "deploy to heroku"
-          command: git push https://heroku:17f11717-c5a0-4035-8d60-fb20422c7eb6@git.heroku.com/desolate-ocean-50585.git master
+          command: git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git master
 workflows:
   build-and-test:
     jobs:
